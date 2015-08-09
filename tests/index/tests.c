@@ -820,3 +820,35 @@ void test_index_tests__can_lock_index(void)
 	git_indexwriter_cleanup(&two);
 	git_index_free(index);
 }
+
+void test_index_tests__bench(void)
+{
+	float start, end;
+	git_index *idx;
+	git_repository *repo;
+	git_tree *tree;
+	git_oid tree_id;
+
+	start = git__timer();
+
+	cl_git_pass(git_index_open(&idx, "/home/carlos/slow/carlos/apps/WebKit/.git/index"));
+
+	end = git__timer();
+
+	git_index_free(idx);
+	printf("opening index took %fs\n", end - start);
+
+	cl_git_pass(git_index_new(&idx));
+	cl_git_pass(git_repository_open(&repo, "/home/carlos/slow/carlos/apps/WebKit"));
+	cl_git_pass(git_oid_fromstr(&tree_id, "1f36b9c74483873649a749890bd3faa132668639"));
+	cl_git_pass(git_tree_lookup(&tree, repo, &tree_id));
+
+	start = git__timer();
+
+	cl_git_pass(git_index_read_tree(idx, tree));
+
+	end = git__timer();
+
+	git_index_free(idx);
+	printf("read-tree took %fs\n", end - start);
+}
